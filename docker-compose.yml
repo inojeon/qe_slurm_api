@@ -1,0 +1,50 @@
+version: "2"
+services:
+  mysql:
+    image: mariadb:10.10
+    hostname: mysql
+    container_name: qe_mysql
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+      MYSQL_DATABASE: slurm_acct_db
+      MYSQL_USER: slurm
+      MYSQL_PASSWORD: slurm2023!!
+    expose:
+      - "3306"
+  slurmctld:
+    image: inojeon/qe_slurm_master_rocky8:21
+    hostname: slurmctld
+    container_name: qe_slurmctld
+    volumes:
+      - ./datas:/datas
+      - ./slurm-api:/slurm-api
+    expose:
+      - "6817:6817"
+      - "6818:6818"
+      - "6819:6819"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mysql
+  slurmd-0:
+    image: inojeon/qe_slurm_worker_rocky8:21
+    hostname: slurmd-0
+    container_name: qe_slurmd-0
+    volumes:
+      - ./datas:/datas
+    expose:
+      - "6818"
+    depends_on:
+      - "slurmctld"
+  # slurmd-1:
+  #   image: inojeon/qe_slurm_worker_rocky8:21
+  #   hostname: slurmd-1
+  #   container_name: slurmd-1
+  #   volumes:
+  #     - ./datas:/datas
+  #   expose:
+  #     - "6818"
+  #   depends_on:
+  #     - "slurmctld"
+volumes:
+  slurm_jobdir:
